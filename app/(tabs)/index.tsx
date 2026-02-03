@@ -1,98 +1,97 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import { TweetItem, Tweet } from '../../components/TweetItem'; // Import จากไฟล์ที่สร้างใหม่
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+// ข้อมูลตัวอย่าง (Mock Data)
+const TWEETS: Tweet[] = [
+  {
+    id: '1',
+    user: {
+    name: '雪兎❄',
+    username: '@yukiusagi_52',
+    avatar: 'https://pbs.twimg.com/profile_images/1913228608434475008/Fh97RG-v_400x400.jpg'
+    },
+    content: '#朝比奈まふゆ誕生祭2026\nまふゆおめでとうーー！！！🎉🎉',
+    image: 'https://pbs.twimg.com/media/G_mRKAFaUAAyk1H?format=jpg&name=4096x4096',
+    imageAspectRatio: 4.5 / 6,
+    time: '16h',
+    stats: { replies: 3, retweets: 1200, likeCount: 7100, views: 59000 },
+  },
+  {
+    id: '2',
+    user: {
+    name: '菊102',
+    username: '@kiku_102',
+    avatar: 'https://pbs.twimg.com/profile_images/2006572380093820928/1p3gRGTS_400x400.jpg'
+    },
+    content: '●リクエスト 寧々&えむ(惜別衣装)',
+    image: 'https://pbs.twimg.com/media/G_hMA2dakAA1dal?format=jpg&name=large',
+    imageAspectRatio: 12 / 9,
+    time: '21h',
+    stats: { replies: 1, retweets: 828, likeCount: 8700, views: 70000 },
+  },
+  {
+    id: '3',
+    user: {
+    name: 'I drink till im drunk',
+    username: '@drarry_175',
+    avatar: 'https://pbs.twimg.com/profile_images/1939541423302344704/8p1f9kw-_400x400.jpg'
+    },
+    content: 'แม่เคะ=ขี้วีน\nแม่เมะ=แอบรักลูกสะใภ้',
+    time: '5h',
+    stats: { replies: 4, retweets: 3000, likeCount: 2300, views: 100000 },
+  },
+  {
+    id: '4',
+    user: {
+    name: '夏里🐧',
+    username: '@rk_prpr',
+    avatar: 'https://pbs.twimg.com/profile_images/1905912587583418368/oWh8pYvB_400x400.jpg'
+    },
+    content: '盗み食い🍫´-',
+    image: 'https://pbs.twimg.com/media/G__3Zw8awAAWGbv?format=jpg&name=large',
+    imageAspectRatio: 4.5 / 6,
+    time: 'Jan 31',
+    stats: { replies: 3, retweets: 1799, likeCount: 12999, views: 114000 },
+  },
+  {
+    id: '5',
+    user: {
+    name: 'มิลค์เศษใจ',
+    username: '@mimilkss',
+    avatar: 'https://pbs.twimg.com/profile_images/1688620631359893504/mO9pfqxT_400x400.jpg'
+    },
+    content: '/me',
+    image: 'https://pbs.twimg.com/media/G_f022gbcAA5Ion?format=jpg&name=large',
+    imageAspectRatio: 10 / 9,
+    time: 'Jan 25',
+    stats: { replies: 6, retweets: 42000, likeCount: 36000, views: 845000 },
+  },
+];
 
-export default function HomeScreen() {
+export default function ForYouScreen() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
-
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <FlatList
+        data={TWEETS}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <TweetItem item={item} />}
+      />
+      
+      {/* Floating Action Button */}
+      <TouchableOpacity style={styles.fab}>
+        <Feather name="plus" size={28} color="white" />
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  container: { flex: 1, backgroundColor: '#000000' },
+  fab: {
+    position: 'absolute', bottom: 20, right: 20,
+    backgroundColor: '#1d9bf0', width: 56, height: 56, borderRadius: 28,
+    justifyContent: 'center', alignItems: 'center', elevation: 5,
   },
 });
