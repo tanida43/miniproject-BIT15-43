@@ -45,7 +45,7 @@ export default function SearchScreen() {
         <View style={styles.searchBar}>
           <Ionicons name="search" size={20} color="#536471" style={{ marginRight: 10 }} />
           <TextInput
-            placeholder="Search X"
+            placeholder="ค้นหา X"
             placeholderTextColor="#536471"
             style={styles.input}
             value={searchText}

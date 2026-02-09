@@ -13,7 +13,7 @@ export default function TabLayout() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header ของหน้า Feed */}
+      {/* Custom Header */}
       <View style={styles.header}>
         <Image 
           source={{ uri: 'https://pbs.twimg.com/profile_images/1938801529026412544/vX8IhCj3_400x400.png' }} 
@@ -21,7 +21,6 @@ export default function TabLayout() {
         />
         <Text style={styles.logo}>𝕏</Text>
         <View style={{ flexDirection: 'row', gap: 15 }}>
-          {/* กดปุ่มนี้ จะเด้งไปหน้า /search ที่อยู่นอก Tabs */}
           <TouchableOpacity onPress={() => router.push('/search')}>
              <Ionicons name="search" size={24} color="white" />
           </TouchableOpacity>
@@ -35,23 +34,13 @@ export default function TabLayout() {
           tabBarInactiveTintColor: '#71767b',
           tabBarLabelStyle: { fontSize: 15, fontWeight: 'bold', textTransform: 'none' },
           tabBarIndicatorStyle: {
-            backgroundColor: '#1d9bf0',
-            height: 3,
-            borderRadius: 3,
-            width: '15%', 
-            left: '17.5%', 
+            backgroundColor: '#1d9bf0', height: 3, borderRadius: 3, width: '40%', left: '30%', 
           },
-          tabBarStyle: {
-            backgroundColor: '#000000',
-            borderBottomWidth: 0.5,
-            borderBottomColor: '#333',
-            elevation: 0,
-            shadowOpacity: 0,
-          },
+          tabBarStyle: { backgroundColor: '#000', borderBottomWidth: 0.5, borderBottomColor: '#333' },
         }}
       >
         <MaterialTopTabs.Screen name="index" options={{ title: 'สำหรับคุณ' }} />
-        <MaterialTopTabs.Screen name="following" options={{ title: 'กำลังติดตาม' }} />
+        <MaterialTopTabs.Screen name="Following" options={{ title: 'กำลังติดตาม' }} />
       </MaterialTopTabs>
     </SafeAreaView>
   );
@@ -60,12 +49,8 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    backgroundColor: '#000',
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: 15, paddingVertical: 10, backgroundColor: '#000',
   },
   headerAvatar: { width: 32, height: 32, borderRadius: 16 },
   logo: { fontSize: 24, color: 'white', fontWeight: 'bold' },
