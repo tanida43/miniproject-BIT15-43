@@ -3,23 +3,22 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Alert, Keyb
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// รูปโปรไฟล์ของเรา (Mock)
+// *** ต้องตรงกับหน้า index.tsx ***
+const STORAGE_KEY = 'tweets_data_v5';
+
 const MY_AVATAR = 'https://pbs.twimg.com/profile_images/1938801529026412544/vX8IhCj3_400x400.png';
 
 export default function ComposeScreen() {
   const router = useRouter();
   const params = useLocalSearchParams(); 
 
-  // State สำหรับเก็บข้อมูล input
   const [content, setContent] = useState('');
   const [imageUrl, setImageUrl] = useState('');
 
-  // ตรวจสอบว่ามี ID ส่งมาไหม? ถ้ามีแสดงว่ากำลัง "แก้ไข"
   const isEditing = !!params.id;
 
   useEffect(() => {
     if (isEditing) {
-      // ถ้าเป็นการแก้ไข ให้ดึงข้อมูลเดิมมาแสดง
       setContent(params.content as string || '');
       setImageUrl(params.image as string || '');
     }
@@ -32,44 +31,41 @@ export default function ComposeScreen() {
     }
 
     try {
-      // 1. ดึงข้อมูลเก่าจากเครื่อง
-      const existingData = await AsyncStorage.getItem('tweets');
+      // 1. ดึงข้อมูลจาก Key ใหม่ (แก้จาก 'tweets' เป็น STORAGE_KEY)
+      const existingData = await AsyncStorage.getItem(STORAGE_KEY);
       let tweets = existingData ? JSON.parse(existingData) : [];
 
       if (isEditing) {
-        // --- กรณีแก้ไข (Update) ---
-        // ค้นหาโพสต์เดิมแล้วอัปเดตข้อมูล
+        // --- กรณีแก้ไข ---
         tweets = tweets.map((t: any) => 
           t.id === params.id 
-            ? { ...t, content: content, image: imageUrl } // อัปเดตเนื้อหาและรูป
+            ? { ...t, content: content, image: imageUrl } 
             : t
         );
       } else {
-        // --- กรณีเพิ่มใหม่ (Create) ---
+        // --- กรณีเพิ่มใหม่ ---
         const newTweet = {
-          id: Date.now().toString(), // ใช้เวลาปัจจุบันเป็น ID
+          id: Date.now().toString(),
           user: {
-            name: 'Me', 
-            username: '@my_account',
+            name: 'Tanida43', 
+            username: '@Tanida_Bunthaokaew',
             avatar: MY_AVATAR
           },
           content: content,
           image: imageUrl,
           time: 'Now',
           stats: { replies: 0, retweets: 0, likeCount: 0, views: 0 },
-          
-          // *** สำคัญ: ระบุว่าเป็นโพสต์ของเรา เพื่อให้ลบได้ ***
           isMyPost: true 
         };
         
-        // ใส่โพสต์ใหม่ไว้บนสุด
-        tweets.unshift(newTweet); 
+        // เอาโพสต์ใหม่ไปไว้บนสุด (แก้จาก unshift เพื่อความชัวร์ ให้สร้าง array ใหม่เลย)
+        tweets = [newTweet, ...tweets];
       }
 
-      // 2. บันทึกกลับลงเครื่อง
-      await AsyncStorage.setItem('tweets', JSON.stringify(tweets));
+      // 2. บันทึกลง Key ใหม่ (แก้จาก 'tweets' เป็น STORAGE_KEY)
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(tweets));
       
-      // 3. ปิดหน้านี้
+      // 3. ปิดหน้า
       router.back(); 
     } catch (e) {
       console.error(e);
@@ -79,7 +75,6 @@ export default function ComposeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header (ปุ่มยกเลิก และ ปุ่มโพสต์) */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.cancelText}>ยกเลิก</Text>
@@ -102,11 +97,9 @@ export default function ComposeScreen() {
       >
         <ScrollView style={styles.contentContainer}>
             <View style={styles.inputWrapper}>
-                {/* รูปโปรไฟล์ */}
                 <Image source={{ uri: MY_AVATAR }} style={styles.avatar} />
                 
                 <View style={{ flex: 1 }}>
-                    {/* ช่องพิมพ์ข้อความ */}
                     <TextInput
                         style={styles.input}
                         placeholder="มีอะไรเกิดขึ้นบ้าง?"
@@ -117,7 +110,6 @@ export default function ComposeScreen() {
                         onChangeText={setContent}
                     />
                     
-                    {/* ช่องใส่ลิงก์รูปภาพ */}
                     <TextInput
                         style={styles.linkInput}
                         placeholder="วางลิงก์รูปภาพ (Optional)"
@@ -127,7 +119,6 @@ export default function ComposeScreen() {
                         autoCapitalize="none"
                     />
 
-                    {/* แสดงตัวอย่างรูปภาพ (ถ้ามี) */}
                     {imageUrl ? (
                         <Image 
                             source={{ uri: imageUrl }} 
@@ -144,7 +135,7 @@ export default function ComposeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000', paddingTop: 40 }, // เพิ่ม Top ให้พ้น Status Bar
+  container: { flex: 1, backgroundColor: '#000', paddingTop: 40 },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -162,14 +153,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   disabledButton: {
-    backgroundColor: '#0f4e78', // สีจางลงเมื่อไม่มีข้อความ
+    backgroundColor: '#0f4e78',
   },
   postButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
-  
   contentContainer: { flex: 1 },
   inputWrapper: { flexDirection: 'row', padding: 15 },
   avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 12 },
-  
   input: { 
     color: 'white', 
     fontSize: 18, 
