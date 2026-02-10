@@ -65,7 +65,7 @@ export const TweetItem = ({
       // เมนูสำหรับโพสต์คนอื่น
       Alert.alert(
         "ตัวเลือก",
-        `โพสต์ของ @${item.user.username}`,
+        `โพสต์ของ ${item.user.username}`,
         [
           { text: "ยกเลิก", style: "cancel" },
           { text: "รายงาน", onPress: () => console.log('Reported') },
