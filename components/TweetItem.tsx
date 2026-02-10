@@ -20,7 +20,7 @@ export interface Tweet {
     likeCount: number;
     views: number;
   };
-  isMyPost?: boolean; // <--- สำคัญ: ตัวนี้แก้ปัญหาเส้นแดง
+  isMyPost?: boolean;
 }
 
 // 2. ตัว Component หลัก

@@ -11,7 +11,6 @@ import {
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
-// 1. Mock Data สำหรับ Trending Topics
 const TRENDS = [
   { id: '1', category: 'Trending in Thailand', title: '#LisaXRockstar', posts: '2.5M posts' },
   { id: '2', category: 'Music · Trending', title: 'NewJeans', posts: '540K posts' },
@@ -28,7 +27,7 @@ export default function SearchScreen() {
     if (router.canGoBack()) {
       router.back(); // ถ้าย้อนได้ ก็ย้อนปกติ
     } else {
-      router.replace('/'); // ถ้าย้อนไม่ได้ (เช่น กด reload มา) ให้บังคับกลับไปหน้า Home
+      router.replace('/'); // ถ้าย้อนไม่ได้ ให้บังคับกลับไปหน้า Home
     }
   };
 
@@ -57,8 +56,6 @@ export default function SearchScreen() {
            <Ionicons name="settings-outline" size={24} color="white" />
         </TouchableOpacity>
       </View>
-
-      {/* --- Trending List --- */}
       <FlatList
         data={TRENDS}
         keyExtractor={(item) => item.id}
@@ -119,7 +116,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 15,
     borderBottomWidth: 0.5,
-    borderBottomColor: '#333', // เส้นขีดคั่นบางๆ แบบเดิม แต่จางลงหน่อยก็ได้
+    borderBottomColor: '#333',
   },
   trendCategory: { color: '#536471', fontSize: 13, marginBottom: 2 },
   trendTitle: { color: 'white', fontSize: 16, fontWeight: 'bold', marginBottom: 2 },

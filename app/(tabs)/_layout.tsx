@@ -13,7 +13,6 @@ export default function TabLayout() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Custom Header */}
       <View style={styles.header}>
         <Image 
           source={{ uri: 'https://pbs.twimg.com/profile_images/1938801529026412544/vX8IhCj3_400x400.png' }} 

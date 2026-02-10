@@ -2,7 +2,6 @@ import React from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
 import { TweetItem, Tweet } from '../../components/TweetItem';
 
-// ข้อมูลตัวอย่างสำหรับหน้า Following (อาจจะแตกต่างจากหน้า For You)
 const FOLLOWING_TWEETS: Tweet[] = [
   {
     id: '11',
