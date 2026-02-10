@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Ionicons } from '@expo/vector-icons';
+
+// รูปโปรไฟล์ของเรา (Mock)
+const MY_AVATAR = 'https://pbs.twimg.com/profile_images/1938801529026412544/vX8IhCj3_400x400.png';
 
 export default function ComposeScreen() {
   const router = useRouter();
@@ -17,7 +19,8 @@ export default function ComposeScreen() {
 
   useEffect(() => {
     if (isEditing) {
-      setContent(params.content as string);
+      // ถ้าเป็นการแก้ไข ให้ดึงข้อมูลเดิมมาแสดง
+      setContent(params.content as string || '');
       setImageUrl(params.image as string || '');
     }
   }, [params]);
@@ -35,9 +38,10 @@ export default function ComposeScreen() {
 
       if (isEditing) {
         // --- กรณีแก้ไข (Update) ---
+        // ค้นหาโพสต์เดิมแล้วอัปเดตข้อมูล
         tweets = tweets.map((t: any) => 
           t.id === params.id 
-            ? { ...t, content, image: imageUrl } // อัปเดตข้อมูลใหม่
+            ? { ...t, content: content, image: imageUrl } // อัปเดตเนื้อหาและรูป
             : t
         );
       } else {
@@ -47,20 +51,26 @@ export default function ComposeScreen() {
           user: {
             name: 'Me', 
             username: '@my_account',
-            avatar: 'https://pbs.twimg.com/profile_images/1938801529026412544/vX8IhCj3_400x400.png'
+            avatar: MY_AVATAR
           },
           content: content,
           image: imageUrl,
           time: 'Now',
           stats: { replies: 0, retweets: 0, likeCount: 0, views: 0 },
+          
+          // *** สำคัญ: ระบุว่าเป็นโพสต์ของเรา เพื่อให้ลบได้ ***
+          isMyPost: true 
         };
-        tweets.unshift(newTweet); // ใส่ไว้บนสุด
+        
+        // ใส่โพสต์ใหม่ไว้บนสุด
+        tweets.unshift(newTweet); 
       }
 
       // 2. บันทึกกลับลงเครื่อง
       await AsyncStorage.setItem('tweets', JSON.stringify(tweets));
       
-      router.back(); // ปิดหน้านี้
+      // 3. ปิดหน้านี้
+      router.back(); 
     } catch (e) {
       console.error(e);
       Alert.alert('Error', 'บันทึกข้อมูลไม่สำเร็จ');
@@ -69,54 +79,78 @@ export default function ComposeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Header (ปุ่มยกเลิก และ ปุ่มโพสต์) */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.cancelText}>ยกเลิก</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.postButton} onPress={handleSave}>
-          <Text style={styles.postButtonText}>{isEditing ? 'แก้ไข' : 'โพสต์'}</Text>
+        
+        <TouchableOpacity 
+          style={[styles.postButton, !content.trim() && styles.disabledButton]} 
+          onPress={handleSave}
+          disabled={!content.trim()}
+        >
+          <Text style={styles.postButtonText}>
+            {isEditing ? 'แก้ไข' : 'โพสต์'}
+          </Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.inputContainer}>
-        <Image 
-          source={{ uri: 'https://pbs.twimg.com/profile_images/1938801529026412544/vX8IhCj3_400x400.png' }} 
-          style={styles.avatar} 
-        />
-        <View style={{ flex: 1 }}>
-            <TextInput
-                style={styles.input}
-                placeholder="มีอะไรเกิดขึ้นบ้าง?"
-                placeholderTextColor="#536471"
-                multiline
-                autoFocus
-                value={content}
-                onChangeText={setContent}
-            />
-            {/* Input สำหรับใส่ Link รูปภาพ */}
-            <TextInput
-                style={styles.linkInput}
-                placeholder="วางลิงก์รูปภาพ (Optional)"
-                placeholderTextColor="#536471"
-                value={imageUrl}
-                onChangeText={setImageUrl}
-            />
-            {imageUrl ? (
-                <Image source={{ uri: imageUrl }} style={styles.previewImage} />
-            ) : null}
-        </View>
-      </View>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+        style={{ flex: 1 }}
+      >
+        <ScrollView style={styles.contentContainer}>
+            <View style={styles.inputWrapper}>
+                {/* รูปโปรไฟล์ */}
+                <Image source={{ uri: MY_AVATAR }} style={styles.avatar} />
+                
+                <View style={{ flex: 1 }}>
+                    {/* ช่องพิมพ์ข้อความ */}
+                    <TextInput
+                        style={styles.input}
+                        placeholder="มีอะไรเกิดขึ้นบ้าง?"
+                        placeholderTextColor="#536471"
+                        multiline
+                        autoFocus
+                        value={content}
+                        onChangeText={setContent}
+                    />
+                    
+                    {/* ช่องใส่ลิงก์รูปภาพ */}
+                    <TextInput
+                        style={styles.linkInput}
+                        placeholder="วางลิงก์รูปภาพ (Optional)"
+                        placeholderTextColor="#536471"
+                        value={imageUrl}
+                        onChangeText={setImageUrl}
+                        autoCapitalize="none"
+                    />
+
+                    {/* แสดงตัวอย่างรูปภาพ (ถ้ามี) */}
+                    {imageUrl ? (
+                        <Image 
+                            source={{ uri: imageUrl }} 
+                            style={styles.previewImage} 
+                            resizeMode="cover"
+                        />
+                    ) : null}
+                </View>
+            </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000', paddingTop: 20 },
+  container: { flex: 1, backgroundColor: '#000', paddingTop: 40 }, // เพิ่ม Top ให้พ้น Status Bar
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 15,
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingBottom: 15,
     borderBottomWidth: 0.5,
     borderBottomColor: '#333'
   },
@@ -124,13 +158,38 @@ const styles = StyleSheet.create({
   postButton: {
     backgroundColor: '#1d9bf0',
     paddingHorizontal: 20,
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderRadius: 20,
   },
-  postButtonText: { color: 'white', fontWeight: 'bold' },
-  inputContainer: { flexDirection: 'row', padding: 15 },
-  avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
-  input: { color: 'white', fontSize: 18, textAlignVertical: 'top', marginBottom: 10 },
-  linkInput: { color: '#1d9bf0', fontSize: 14, paddingVertical: 5 },
-  previewImage: { width: '100%', height: 200, borderRadius: 10, marginTop: 10, resizeMode: 'cover' }
+  disabledButton: {
+    backgroundColor: '#0f4e78', // สีจางลงเมื่อไม่มีข้อความ
+  },
+  postButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+  
+  contentContainer: { flex: 1 },
+  inputWrapper: { flexDirection: 'row', padding: 15 },
+  avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 12 },
+  
+  input: { 
+    color: 'white', 
+    fontSize: 18, 
+    textAlignVertical: 'top', 
+    marginBottom: 15,
+    minHeight: 100
+  },
+  linkInput: { 
+    color: '#1d9bf0', 
+    fontSize: 14, 
+    paddingVertical: 8,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#333',
+    marginBottom: 10
+  },
+  previewImage: { 
+    width: '100%', 
+    height: 200, 
+    borderRadius: 12, 
+    marginTop: 10,
+    backgroundColor: '#111' 
+  }
 });

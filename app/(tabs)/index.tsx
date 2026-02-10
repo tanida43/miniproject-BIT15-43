@@ -5,26 +5,42 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TweetItem, Tweet } from '../../components/TweetItem';
 
-// ข้อมูลเริ่มต้น (Mock Data) ถ้ายังไม่มีในเครื่อง
+// ข้อมูลตัวอย่าง (ผมใส่ isMyPost: true ที่อันแรกให้แล้ว เพื่อทดสอบ)
 const MOCK_DATA: Tweet[] = [
   {
-    id: '999',
+    id: '1',
     user: {
-      name: 'Admin',
-      username: '@admin',
-      avatar: 'https://reactnative.dev/img/tiny_logo.png'
+      name: 'Me',
+      username: '@my_account',
+      avatar: 'https://pbs.twimg.com/profile_images/1913228608434475008/Fh97RG-v_400x400.jpg'
     },
-    content: 'ยินดีต้อนรับ! ลองกดปุ่ม + ด้านขวาล่างเพื่อเพิ่มโพสต์ หรือกด ... ที่โพสต์เพื่อลบ/แก้ไข',
-    time: 'Pinned',
-    stats: { replies: 0, retweets: 5, likeCount: 10, views: 100 },
-  }
+    content: 'นี่คือโพสต์ของฉัน ทดสอบการลบและแก้ไข! 🚀',
+    time: 'Now',
+    stats: { replies: 0, retweets: 0, likeCount: 0, views: 0 },
+    isMyPost: true, // <--- อันนี้คือโพสต์ของเรา
+  },
+  {
+    id: '2',
+    user: {
+      name: '雪兎❄',
+      username: '@yukiusagi_52',
+      avatar: 'https://pbs.twimg.com/profile_images/1913228608434475008/Fh97RG-v_400x400.jpg'
+    },
+    content: '#朝比奈まふゆ誕生祭2026\nまふゆおめでとうーー！！！🎉🎉',
+    image: 'https://pbs.twimg.com/media/G_mRKAFaUAAyk1H?format=jpg&name=4096x4096',
+    imageAspectRatio: 4.5 / 6,
+    time: '16h',
+    stats: { replies: 3, retweets: 1200, likeCount: 7100, views: 59000 },
+    isMyPost: false,
+  },
 ];
 
+// *** สำคัญ: ต้องมี export default ***
 export default function ForYouScreen() {
   const router = useRouter();
   const [data, setData] = useState<Tweet[]>([]);
 
-  // useFocusEffect จะทำงานทุกครั้งที่หน้านี้ถูกเปิด (เช่น กลับมาจากหน้าโพสต์)
+  // โหลดข้อมูลทุกครั้งที่เข้าหน้านี้
   useFocusEffect(
     useCallback(() => {
       loadTweets();
@@ -37,7 +53,6 @@ export default function ForYouScreen() {
       if (storedTweets) {
         setData(JSON.parse(storedTweets));
       } else {
-        // ถ้าว่าง ให้ใส่ Mock Data แล้วบันทึก
         await AsyncStorage.setItem('tweets', JSON.stringify(MOCK_DATA));
         setData(MOCK_DATA);
       }
@@ -46,19 +61,41 @@ export default function ForYouScreen() {
     }
   };
 
-  // ฟังก์ชันลบข้อมูล
+  // ฟังก์ชันลบ
   const handleDelete = async (id: string) => {
-    try {
-      const newData = data.filter(item => item.id !== id); // กรองเอาตัวที่ id ตรงกันออก
-      setData(newData); // อัปเดตหน้าจอ
-      await AsyncStorage.setItem('tweets', JSON.stringify(newData)); // บันทึกลงเครื่อง
-    } catch (e) {
-      Alert.alert('Error', 'ลบข้อมูลไม่สำเร็จ');
+    const postToDelete = data.find(item => item.id === id);
+    if (!postToDelete) return;
+
+    if (!postToDelete.isMyPost) {
+      Alert.alert('แจ้งเตือน', 'ลบโพสต์คนอื่นไม่ได้ครับ');
+      return; 
     }
+
+    Alert.alert(
+      'ยืนยันการลบ',
+      'ต้องการลบโพสต์นี้จริงหรือไม่?',
+      [
+        { text: 'ยกเลิก', style: 'cancel' },
+        {
+          text: 'ลบ',
+          style: 'destructive',
+          onPress: async () => {
+            const newData = data.filter(item => item.id !== id);
+            setData(newData);
+            await AsyncStorage.setItem('tweets', JSON.stringify(newData));
+          }
+        }
+      ]
+    );
   };
 
-  // ฟังก์ชันส่งไปหน้าแก้ไข
+  // ฟังก์ชันแก้ไข
   const handleEdit = (item: Tweet) => {
+    if (!item.isMyPost) {
+      Alert.alert('แจ้งเตือน', 'แก้ไขโพสต์คนอื่นไม่ได้ครับ');
+      return;
+    }
+
     router.push({
       pathname: '/compose',
       params: {
@@ -77,21 +114,21 @@ export default function ForYouScreen() {
         renderItem={({ item }) => (
           <TweetItem 
             item={item} 
-            onDelete={handleDelete} // ส่ง props ฟังก์ชันลบ
-            onEdit={handleEdit}     // ส่ง props ฟังก์ชันแก้ไข
+            onDelete={handleDelete}
+            onEdit={handleEdit}
           />
         )}
         ListEmptyComponent={
-            <View style={{ padding: 20, alignItems: 'center', marginTop: 50 }}>
-                <Text style={{ color: 'gray' }}>ยังไม่มีโพสต์</Text>
-            </View>
+           <View style={{ padding: 20, alignItems: 'center' }}>
+             <Text style={{ color: 'gray' }}>ไม่มีข้อมูล</Text>
+           </View>
         }
       />
       
-      {/* ปุ่ม Floating Action Button (FAB) */}
+      {/* ปุ่มบวก (+) */}
       <TouchableOpacity 
         style={styles.fab} 
-        onPress={() => router.push('/compose')} // ไปหน้าโพสต์ใหม่
+        onPress={() => router.push('/compose')}
       >
         <Feather name="plus" size={28} color="white" />
       </TouchableOpacity>
